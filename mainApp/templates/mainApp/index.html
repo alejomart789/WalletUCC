@@ -1,0 +1,55 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Título por Defecto{% endblock %}</title>
+
+    <!-- Agrega los estilos CSS -->
+    {% block styles %}
+        <link rel="stylesheet" href="{% static 'mainApp/css/style.css' %}">
+    {% endblock %}
+</head>
+<body>
+    <!-- Cabecera -->
+    {% block header %}
+        <header class="main-header">
+            <div class="container">
+            <div class="logo">
+                <img src="{% static 'mainApp/img/logo.png' %}" alt="WalletUCC">
+            </div>                
+            <nav class="main-nav">
+                <ul>
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Servicios</a></li>
+                </ul>
+            </nav>
+            <button class="cta-btn">Botón</button>
+            </div>
+        </header>      
+    {% endblock %}
+
+    <!-- Agrega el contenido principal -->
+    {% block content %}
+        <div class="container">
+            <h1>Título Principal</h1>
+            <p>Contenido principal</p>
+        </div>
+    {% endblock %}
+
+    <!-- Agrega el pie de página -->
+    {% block footer %}
+        <footer class="bg-light text-center py-3 d-flex justify-content-center">
+            <p>Derechos de Autor © 2023</p>
+        </footer>
+    {% endblock %}
+
+    <!-- Agrega los scripts -->
+    {% block scripts %}
+        <script src="{% static 'mainApp/js/main.js' %}"></script>
+    {% endblock %}
+</body>
+</html>
