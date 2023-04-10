@@ -11,6 +11,9 @@
     {% block styles %}
         <link rel="stylesheet" href="{% static 'mainApp/css/style.css' %}">
     {% endblock %}
+
+    <script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E=" crossorigin="anonymous"></script>
+
 </head>
 <body>
     <!-- Cabecera -->
@@ -27,7 +30,7 @@
                 <li><a href="#">Servicios</a></li>
                 </ul>
             </nav>
-            <button class="cta-btn">Botón</button>
+            <button id="boton-header" class="cta-btn">Iniciar Sesión</button>
             </div>
         </header>      
     {% endblock %}
