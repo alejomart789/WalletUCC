@@ -26,6 +26,41 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec imperdiet ipsum n
 mkdir walletucc
 ```
 
+3. Ingrese al directorio que acabas de crear:
+```bash 
+cd walletucc
+```
+
+4. Ahora, instala Django:
+```bash 
+pip install Django
+```
+
+5. Clona el repositorio de Git en el directorio del proyecto:
+```bash 
+git clone <URL del repositorio>
+git clone https://github.com/alejomart789/WalletUCC.git
+```
+
+6. Ingresa al directorio del proyecto clonado:
+```bash 
+cd <nombre del proyecto>
+cd WalletUCC
+```
+
+7. Ejecuta las migraciones para crear la base de datos:
+```bash 
+python manage.py migrate
+```
+
+8. Ahora, puedes ejecutar el servidor de desarrollo:
+```bash 
+python manage.py runserver
+```
+
+9. Abre tu navegador web y visita la siguiente URL: http://localhost:8000/. Deberías ver la página principal de tu proyecto.
+
+ESTO ES TODO! YA ESTAS LISTO PARA USAR ESTE PROYECTO!
 
 ## Uso
 
