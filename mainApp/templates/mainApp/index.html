@@ -14,6 +14,10 @@
 
     <script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E=" crossorigin="anonymous"></script>
 
+    {% block extra_css %}
+
+    {% endblock %}
+
 </head>
 <body>
     <!-- Cabecera -->
@@ -25,12 +29,14 @@
             </div>                
             <nav class="main-nav">
                 <ul>
-                <li><a href="#">Inicio</a></li>
+                <li><a href="/">Inicio</a></li>
                 <li><a href="#">Blog</a></li>
                 <li><a href="#">Servicios</a></li>
                 </ul>
             </nav>
-            <button id="boton-header" class="cta-btn">Iniciar Sesión</button>
+            <a href="/login/">
+                <button id="boton-header" class="cta-btn">Iniciar Sesión</button>
+            </a>
             </div>
         </header>      
     {% endblock %}
