@@ -19,6 +19,12 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec imperdiet ipsum n
 ## Instalación
 
 <!-- Instrucciones para instalar y configurar el proyecto aquí -->
+1. Asegúrate de tener Python instalado en tu sistema. Puedes descargar la última versión de Python en la página oficial de Python: https://www.python.org/downloads/
+
+2. Abre la terminal o línea de comandos y crea un nuevo directorio para tu proyecto. Por ejemplo, puedes crear un directorio llamado walletucc:
+```bash
+# Tu código aquí
+mkdir walletucc
 
 ## Uso
 
