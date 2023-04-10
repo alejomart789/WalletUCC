@@ -23,7 +23,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec imperdiet ipsum n
 
 2. Abre la terminal o línea de comandos y crea un nuevo directorio para tu proyecto. Por ejemplo, puedes crear un directorio llamado walletucc:
 ```bash 
-mkdir walletucc```
+mkdir walletucc
+```
 
 
 ## Uso
