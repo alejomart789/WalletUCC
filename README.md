@@ -14,7 +14,10 @@
 </p>
 
 <!-- Agregar una descripción del proyecto aquí -->
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec imperdiet ipsum nec lectus varius, ac tristique nulla blandit.
+PROYECTO EN CONSTRUCCIÓN - Proyecto de sofware para la Universidad Cooperativa de Colombia en la carrera de Ingenieria de Sistemas
+Materias que incluye:
+1. Sistemas Distribuidos
+2. Creacion de base de datos
 
 ## Instalación
 
@@ -58,30 +61,49 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-9. Abre tu navegador web y visita la siguiente URL: http://localhost:8000/. Deberías ver la página principal de tu proyecto.
+9. Abre tu navegador web y visita la siguiente URL: 
+http://localhost:8000/. 
+Deberías ver la página principal de tu proyecto.
 
-ESTO ES TODO! YA ESTAS LISTO PARA USAR ESTE PROYECTO!
+# ¡ESTO ES TODO! 
+¡YA ESTAS LISTO PARA USAR ESTE PROYECTO!
 
 ## Uso
 
 <!-- Instrucciones para usar el proyecto aquí -->
+PROYECTO EN CONSTRUCCIÓN
 
 ## Contribuir
 
-1. Fork el proyecto.
-2. Crea tu propia rama (`git checkout -b feature/AmazingFeature`)
-3. Commitea tus cambios (`git commit -m 'Añade una característica increíble'`)
-4. Haz push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request.
+Aquí tienes una guía básica de cómo contribuir a este proyecto en GitHub:
+
+1. Haz un fork del repositorio en GitHub haciendo clic en el botón "Fork" en la página del repositorio.
+2. Clona el repositorio a tu computadora con (`git clone https://github.com/alejomart789/WalletUCC.git`).
+3. Crea una rama para tus cambios con (`git checkout -b MI_RAMA`).
+4. Realiza los cambios necesarios en tu rama. 
+Asegúrate de seguir las convenciones de codificación del proyecto y de agregar pruebas si es necesario.
+5. Agrega los archivos modificados a tu rama con (`git add NOMBRE_ARCHIVO`).
+6. Haz commit de tus cambios con (`git commit -m "MENSAJE_DE_COMMIT"`).
+7. Empuja tus cambios a tu repositorio remoto con (`git push origin MI_RAMA`).
+8. Ve a la página de tu repositorio en GitHub y haz clic en el botón "Compare & pull request".
+9. Escribe una descripción clara de tus cambios y por qué los estás haciendo.
+10. Haz clic en el botón "Create pull request" para enviar tu solicitud de fusión al proyecto.
+11. Espera a que los revisores del proyecto revisen tus cambios. 
+- Si necesitan que hagas cambios adicionales, lo indicarán en la solicitud de extracción y podrás hacer los cambios en tu rama y volver a empujarlos.
+- Si tus cambios son aceptados, se fusionarán con la rama principal del proyecto y estarán disponibles para todos los usuarios del proyecto.
+
+Espero que esto te haya ayudado a entender cómo contribuir a este proyecto en GitHub. 
+# ¡Buena suerte en tus futuras contribuciones!
 
 <!-- Agregar información adicional para contribuir aquí -->
 
 ## Licencia
 
-Distribuido bajo la licencia MIT. Ver `LICENSE` para más información.
+Distribuido bajo la licencia MIT. 
+Ver `LICENSE` para más información.
 
 ## Contacto
 
-Tu Nombre - [@TuUsuarioDeTwitter](https://twitter.com/TuUsuarioDeTwitter) - tu@email.com
+Tu Nombre - [@AlejoMLopez789](https://twitter.com/AlejoMLopez789) - info.henessymarketing@gmail.com
 
-Proyecto: [https://github.com/tuusuario/tuproyecto](https://github.com/tuusuario/tuproyecto/)
+Proyecto: [https://github.com/AlejoMart789/WalletUCC](https://github.com/AlejoMart789/WalletUCC/)
