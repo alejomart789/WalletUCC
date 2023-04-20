@@ -17,13 +17,14 @@
         {% endblock %}
 
         {% block extra_css %}
+
         {% endblock %}
     </head>
     <body>
         <!-- Cabecera -->
         {% block header %}
         <nav class="navbar navbar-expand-custom navbar-mainbg">
-            <a class="navbar-brand navbar-logo" href="#">
+            <a class="navbar-brand navbar-logo" href="{% url 'inicio' %}">
                 <img src="{% static 'mainApp/img/logo.png' %}" alt="Logotipo de la barra de navegación" style="max-width: 30px">
                 WalletUCC
             </a>
