@@ -125,7 +125,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = 'WalletUCC\staticfiles'
 
 
@@ -135,3 +134,9 @@ STATIC_ROOT = 'WalletUCC\staticfiles'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+AUTHENTICATION_BACKENDS = ['Usuarios.backends.EmailOrUsernameModelBackend']
+
+SESSION_COOKIE_AGE = 300  # tiempo en segundos (5 minutos)
+
