@@ -140,3 +140,5 @@ AUTHENTICATION_BACKENDS = ['Usuarios.backends.EmailOrUsernameModelBackend']
 
 SESSION_COOKIE_AGE = 300  # tiempo en segundos (5 minutos)
 
+LOGIN_URL = 'login_user'
+
