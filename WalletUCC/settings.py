@@ -83,9 +83,9 @@ DATABASES = {
         },
         'NAME': 'db_walletucc',
         'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '',
+        'PASSWORD': 'Comandos555123*',
+        'HOST': '104.154.52.110',
+        'PORT': '3306',
     }
 }
 

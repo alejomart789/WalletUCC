@@ -1,11 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+
+TIPO_USUARIO_CHOICES = [    ('Estudiante', 'Estudiante'),    ('Profesor', 'Profesor'),    ('Dependencia', 'Dependencia'),]
 
 class Usuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='usuario')
     nombres = models.CharField(max_length=50)
     apellidos = models.CharField(max_length=50)
-    tipo_usuario = models.CharField(max_length=50)
+    tipo_usuario = models.CharField(max_length=50, choices=TIPO_USUARIO_CHOICES)
     identificacion = models.PositiveIntegerField(unique=True)
     email = models.EmailField()
 
@@ -15,6 +18,13 @@ class Usuario(models.Model):
     class Meta:
         verbose_name = "Usuario"
         verbose_name_plural = "Usuarios"
+
+    def clean(self):
+        if self.tipo_usuario == 'Estudiante' and self.profesor:
+            raise ValidationError('Un usuario no puede ser estudiante y profesor a la vez')
+        if self.tipo_usuario == 'Profesor' and self.estudiante:
+            raise ValidationError('Un usuario no puede ser estudiante y profesor a la vez')
+
 
 class Estudiante(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='estudiante')
@@ -27,7 +37,12 @@ class Estudiante(models.Model):
     class Meta:
         verbose_name = "Estudiante"
         verbose_name_plural = "Estudiantes"
+
+    def clean(self):
+        if Profesor.objects.filter(usuario=self.usuario).exists():
+            raise ValidationError('El usuario ya tiene un perfil de profesor')
         
+
 class Profesor(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profesor')
     codigo_profesor = models.PositiveIntegerField(unique=True)
@@ -39,6 +54,11 @@ class Profesor(models.Model):
     class Meta:
         verbose_name = "Profesor"
         verbose_name_plural = "Profesores"
+
+    def clean(self):
+        if Estudiante.objects.filter(usuario=self.usuario).exists():
+            raise ValidationError('El usuario ya tiene un perfil de estudiante')
+
         
 class Cuenta(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
