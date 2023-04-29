@@ -24,7 +24,7 @@
         <!-- Cabecera -->
         {% block header %}
         <nav class="navbar navbar-expand-custom navbar-mainbg">
-            <a class="navbar-brand navbar-logo" href="{% url 'inicio' %}">
+            <a class="navbar-brand navbar-logo" href="{% url 'mainApp:inicio' %}">
                 <img src="{% static 'mainApp/img/logo.png' %}" alt="Logotipo de la barra de navegación" style="max-width: 30px">
                 WalletUCC
             </a>
@@ -35,7 +35,7 @@
                 <ul class="navbar-nav ml-auto">
                     <div class="hori-selector"><div class="left"></div><div class="right"></div></div>
                     <li class="nav-item active">
-                        <a class="nav-link" href="{% url 'inicio' %}"><i class="fas fa-tachometer-alt"></i>INICIO</a>
+                        <a class="nav-link" href="{% url 'mainApp:inicio' %}"><i class="fas fa-tachometer-alt"></i>INICIO</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="javascript:void(0);"><i class="far fa-address-book"></i>BLOG</a>
