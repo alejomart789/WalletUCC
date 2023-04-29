@@ -39,4 +39,3 @@ def consola_estudiantes(request):
     saldo_str = locale.format_string("%d", saldo, grouping=True)  # formatea saldo con separadores de miles
     
     return render(request, 'Estudiantes/consola_estudiantes.html', {'nombre_completo': nombre_completo, 'saldo_str': saldo_str})
-
