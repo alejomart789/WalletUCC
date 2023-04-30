@@ -32,10 +32,21 @@ def login_user(request):
 def consola_estudiantes(request):
     usuario = request.user.usuario #Llama al usuario que tiene la sesion iniciada
     
+    
     nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
+    
+    foto_perfil_url = usuario.foto_perfil.url
+    
     
     # Mostrar saldo del estudiante
     saldo = usuario.cuenta.saldo  # obtiene el saldo de la cuenta del usuario
     saldo_str = locale.format_string("%d", saldo, grouping=True)  # formatea saldo con separadores de miles
     
+<<<<<<< HEAD
     return render(request, 'Estudiantes/consola_estudiantes.html', {'nombre_completo': nombre_completo, 'saldo_str': saldo_str})
+=======
+    
+    
+    return render(request, 'Estudiantes/consola_estudiantes.html', {'nombre_completo': nombre_completo, 'foto_perfil': foto_perfil_url, 'saldo_str': saldo_str})
+
+>>>>>>> cabecera_estudiantes
