@@ -36,7 +36,7 @@ i {
 }
 
 #navbarSupportedContent ul li a i{
-	margin-right: 10px;
+	margin-right: 5px;
 }
 
 #navbarSupportedContent li {
@@ -65,7 +65,7 @@ i {
 	content: "\f105";
 	position: absolute;
 	right: 20px;
-	top: 10px;
+	top: 15px;
 	font-size: 14px;
 	font-family: "Font Awesome 5 Free";
 	display: inline-block;

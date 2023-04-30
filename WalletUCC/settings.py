@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -75,6 +76,20 @@ WSGI_APPLICATION = 'WalletUCC.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#         'NAME': 'db_walletucc',
+#         'USER': 'root',
+#         'PASSWORD': 'Comandos555123*',
+#         'HOST': '104.154.52.110',
+#         'PORT': '3306',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -83,8 +98,8 @@ DATABASES = {
         },
         'NAME': 'db_walletucc',
         'USER': 'root',
-        'PASSWORD': 'Comandos555123*',
-        'HOST': '104.154.52.110',
+        'PASSWORD': '',
+        'HOST': 'localhost',
         'PORT': '3306',
     }
 }
@@ -141,4 +156,8 @@ AUTHENTICATION_BACKENDS = ['Usuarios.backends.EmailOrUsernameModelBackend']
 SESSION_COOKIE_AGE = 300  # tiempo en segundos (5 minutos)
 
 LOGIN_URL = 'login_user'
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
