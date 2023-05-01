@@ -2,10 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-<<<<<<< HEAD
-from django.core.mail import send_mail
-=======
->>>>>>> e63b12f (Se realizar la base de datos inicial con todos los requerimientos del proyecto)
 
 ROL_USUARIO_CHOICES = [('Estudiante', 'Estudiante'), ('Profesor', 'Profesor'), ('Dependencia', 'Dependencia')]
 
@@ -27,15 +23,9 @@ class Usuario(models.Model):
         verbose_name_plural = "Usuarios"
 
     def clean(self):
-<<<<<<< HEAD
-        if self.rol == 'Estudiante' and getattr(self, 'profesor', None):
-            raise ValidationError('Un usuario no puede ser estudiante y profesor a la vez')
-        if self.rol == 'Profesor' and getattr(self, 'estudiante', None):
-=======
         if self.rol == 'Estudiante' and hasattr(self, 'profesor'):
             raise ValidationError('Un usuario no puede ser estudiante y profesor a la vez')
         if self.rol == 'Profesor' and hasattr(self, 'estudiante'):
->>>>>>> e63b12f (Se realizar la base de datos inicial con todos los requerimientos del proyecto)
             raise ValidationError('Un usuario no puede ser estudiante y profesor a la vez')
 
 
@@ -68,21 +58,6 @@ class Dependencia(models.Model):
         verbose_name_plural = "Dependencias"
 
 
-<<<<<<< HEAD
-class Estudiante(models.Model):
-    SEMESTRE_CHOICES = [(1, 'Primer Semestre'), (2, 'Segundo Semestre'), (3, 'Tercer Semestre'), (4, 'Cuarto Semestre'), (5, 'Quinto Semestre'), (6, 'Sexto Semestre'), (7, 'Séptimo Semestre'), (8, 'Octavo Semestre'), (9, 'Noveno Semestre'), (10, 'Décimo Semestre')]
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='estudiante')
-    semestre_actual = models.PositiveIntegerField(choices=SEMESTRE_CHOICES)
-    valor_semestre = models.DecimalField(max_digits=10, decimal_places=2)
-    creditos_registrados = models.PositiveIntegerField()
-
-    def __str__(self):
-        return f'{self.usuario.nombres} {self.usuario.apellidos} - Semestre {self.semestre_actual}'
-
-    class Meta:
-        verbose_name = "Estudiante"
-        verbose_name_plural = "
-=======
 class Envio(models.Model):
     id_envio = models.PositiveIntegerField(unique=True)
     origen = models.ForeignKey(Cuenta, on_delete=models.CASCADE, related_name='envios_realizados')
@@ -144,4 +119,3 @@ class Transaccion(models.Model):
             mensaje = f'La transacción {self.id} con la dependencia {self.dependencia.nombre} está pendiente de pago'
             # Enviar notificación al usuario
             pass
->>>>>>> e63b12f (Se realizar la base de datos inicial con todos los requerimientos del proyecto)
