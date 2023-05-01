@@ -2,10 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from django.core.exceptions import PermissionDenied
+from datetime import datetime, timedelta
+
 
 class Usuario(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='usuario')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     nombres_usuario = models.CharField(max_length=50)
     apellidos_usuario = models.CharField(max_length=50)
     identificacion_usuario = models.PositiveIntegerField(unique=True)
@@ -20,15 +21,25 @@ class Usuario(models.Model):
         verbose_name = "Usuario"
         verbose_name_plural = "Usuarios"
 
+
 class Estudiante(models.Model):
-    usuario_estudiante = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     valor_semestre_estudiante = models.DecimalField(max_digits=15, decimal_places=2)
     creditos_registrados_estudiante = models.PositiveIntegerField()
-    semestre_actual_estudiante = models.PositiveIntegerField()
+    semestre_a_pagar_estudiante = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.usuario.nombres_usuario} {self.usuario.apellidos_usuario} - Semestre {self.semestre_a_pagar_estudiante}"
+
+    class Meta:
+        verbose_name = "Estudiante"
+        verbose_name_plural = "Estudiantes"
+        
+    
 
 
 class Cuenta(models.Model):
-    usuario_cuenta = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='Cuenta')
+    usuario_cuenta = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='cuenta')
     saldo_usuario = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
@@ -65,16 +76,40 @@ class Envio(models.Model):
     estado_envio = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Envío {self.id_envio} de {self.origen.usuario.nombres} {self.origen.usuario.apellidos} a {self.destino.usuario.nombres} {self.destino.usuario.apellidos}'
+        return f'Envío {self.id_envio} de {self.origen_cuenta.usuario_cuenta.nombres_usuario} {self.origen_cuenta.usuario_cuenta.apellidos_usuario} a {self.destino_cuenta.usuario_cuenta.nombres_usuario} {self.destino_cuenta.usuario_cuenta.apellidos_usuario}'
 
     class Meta:
         verbose_name = "Envío"
         verbose_name_plural = "Envíos"
 
+    def clean(self):
+        if self.origen_cuenta.usuario_cuenta.saldo_usuario < self.monto_envio:
+            raise ValidationError('El usuario no tiene suficiente saldo para realizar este envío')
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            # Verificar que el usuario tenga suficiente saldo para realizar el envío
+            if self.origen_cuenta.usuario_cuenta.saldo_usuario < self.monto_envio:
+                raise ValidationError('El usuario no tiene suficiente saldo para realizar este envío')
+            # Restar el monto de la cuenta del origen
+            self.origen_cuenta.saldo_usuario -= self.monto_envio
+            self.origen_cuenta.save()
+            # Añadir el monto a la cuenta del destino
+            self.destino_cuenta.saldo_usuario += self.monto_envio
+            self.destino_cuenta.save()
+        super().save(*args, **kwargs)
 
 class Transaccion(models.Model):
-    dependencia_origien = models.ForeignKey(Dependencia, on_delete=models.CASCADE, related_name='transacciones')
-    usuario_destino = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='transacciones')
+    dependencia_origen = models.ForeignKey(
+        Dependencia,
+        on_delete=models.CASCADE,
+        related_name='transacciones_enviadas'
+    )
+    usuario_destino = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='transacciones_recibidas'
+    )
     info_factura_dependencia = models.CharField(max_length=100)
     monto_transaccion = models.DecimalField(max_digits=10, decimal_places=2)
     fecha_transaccion = models.DateTimeField(auto_now_add=True)
@@ -82,38 +117,32 @@ class Transaccion(models.Model):
     pagada_transaccion = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Transacción {self.id} de {self.usuario_destino.user.username} a {self.dependencia_origien.nombre_dependencia}'
+        return f'Transacción {self.id} de {self.usuario_destino.user.username} a {self.dependencia_origen.nombre_dependencia}'
 
     class Meta:
-        verbose_name = "Transacción"
-        verbose_name_plural = "Transacciones"
+        verbose_name = 'Transacción'
+        verbose_name_plural = 'Transacciones'
         ordering = ['-fecha_transaccion']
 
     def clean(self):
-        if self.monto <= 0:
+        if self.monto_transaccion <= 0:
             raise ValidationError('El monto de la transacción debe ser mayor a cero')
-        if self.fecha_vencimiento_transaccion and self.fecha_vencimiento_transaccion <= self.fecha:
+        if self.fecha_vencimiento_transaccion and self.fecha_vencimiento_transaccion <= timezone.now():
             raise ValidationError('La fecha de vencimiento debe ser posterior a la fecha actual')
     
     def save(self, *args, **kwargs):
         # Verificar que el usuario tenga suficiente saldo para pagar la transacción
-        if self.usuario_destino.Cuenta.saldo_usuario < self.monto_transaccion:
+        if self.usuario_destino.usuario_cuenta.saldo_usuario < self.monto_transaccion:
             raise ValidationError('El usuario no tiene suficiente saldo para realizar esta transacción')
         # Restar el monto de la cuenta del usuario
-        self.usuario_destino.Cuenta.saldo_usuario -= self.monto_transaccion
-        self.usuario.Cuenta.save()
+        self.usuario_destino.usuario_cuenta.saldo_usuario -= self.monto_transaccion
+        self.usuario_destino.usuario_cuenta.save()
         # Añadir el monto a la cuenta de la dependencia
-        self.dependencia_origien.saldo_dependencia += self.monto_transaccion
-        self.Dependencia.save()
-        super(Transaccion, self).save(*args, **kwargs)
+        self.dependencia_origen.saldo_dependencia += self.monto_transaccion
+        self.dependencia_origen.save()
+        super().save(*args, **kwargs)
 
     def actualizar_estado(self):
-        if not self.pagada and self.fecha_vencimiento and self.fecha_vencimiento <= timezone.now():
-            self.pagada = True
+        if not self.pagada_transaccion and self.fecha_vencimiento_transaccion and self.fecha_vencimiento_transaccion <= timezone.now():
+            self.pagada_transaccion = True
             self.save()
-
-    def notificar_usuario(self):
-        if not self.pagada_transaccion and self.fecha_vencimiento and self.fecha_vencimiento <= timezone.now():
-            mensaje = f'La transacción {self.id} con la dependencia {self.dependencia.nombre} está pendiente de pago'
-            # Enviar notificación al usuario
-            pass

@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
+from Usuarios.models import Usuario
+
 
 import locale
 
@@ -30,19 +32,21 @@ def login_user(request):
         
 @login_required
 def consola_estudiantes(request):
-    usuario = request.user.Usuario #Llama al usuario que tiene la sesion iniciada
-    
-    
-    nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
-    
-    foto_perfil_url = usuario.foto_perfil.url
-    
-    
-    # Mostrar saldo del estudiante
-    saldo = usuario.cuenta.saldo  # obtiene el saldo de la cuenta del usuario
-    saldo_str = locale.format_string("%d", saldo, grouping=True)  # formatea saldo con separadores de miles
-    
-    
-    
-    return render(request, 'Estudiantes/consola_estudiantes.html', {'nombre_completo': nombre_completo, 'foto_perfil': foto_perfil_url, 'saldo_str': saldo_str})
+    usuario = request.user.usuario  # Obtiene el objeto de usuario
 
+    nombre_completo = f"{usuario.nombres_usuario} {usuario.apellidos_usuario}"
+    
+    foto_perfil_url = usuario.foto_perfil_usuario.url
+
+    # Mostrar saldo del estudiante
+    saldo = usuario.cuenta.saldo_usuario # obtiene el saldo de la cuenta del usuario
+    saldo_str = f"{saldo:,}"  # formatea saldo con separadores de miles
+    
+    
+    # Mostrar el valor a pagar del semestre y la fecha de pago
+    valor_pagar_semestre = usuario.estudiante.valor_semestre_estudiante
+    valor_pagar_semestre_str = f"{valor_pagar_semestre:,}"
+    
+    semestre_pagar = (usuario.estudiante.semestre_a_pagar_estudiante)
+    
+    return render(request, 'Estudiantes/consola_estudiantes.html', {'nombre_completo': nombre_completo, 'foto_perfil': foto_perfil_url, 'saldo_str': saldo_str, 'valor_pagar_semestre_str':valor_pagar_semestre_str, 'semestre_pagar':semestre_pagar})
