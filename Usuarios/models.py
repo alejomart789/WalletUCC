@@ -1,17 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
-TIPO_USUARIO_CHOICES = [    ('Estudiante', 'Estudiante'),    ('Profesor', 'Profesor'),    ('Dependencia', 'Dependencia'),]
+ROL_USUARIO_CHOICES = [('Estudiante', 'Estudiante'), ('Profesor', 'Profesor'), ('Dependencia', 'Dependencia')]
 
 class Usuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='usuario')
     nombres = models.CharField(max_length=50)
     apellidos = models.CharField(max_length=50)
-    tipo_usuario = models.CharField(max_length=50, choices=TIPO_USUARIO_CHOICES)
+    rol = models.CharField(max_length=50, choices=ROL_USUARIO_CHOICES)
     identificacion = models.PositiveIntegerField(unique=True)
     email = models.EmailField()
     foto_perfil = models.ImageField(upload_to='Usuarios/img/Perfil', default='Usuarios/img/Perfil/default.png', blank=True)
+    amigos = models.ManyToManyField('self', blank=True)
 
     def __str__(self):
         return self.user.username
@@ -21,46 +23,12 @@ class Usuario(models.Model):
         verbose_name_plural = "Usuarios"
 
     def clean(self):
-        if self.tipo_usuario == 'Estudiante' and hasattr(self, 'profesor'):
+        if self.rol == 'Estudiante' and hasattr(self, 'profesor'):
             raise ValidationError('Un usuario no puede ser estudiante y profesor a la vez')
-        if self.tipo_usuario == 'Profesor' and hasattr(self, 'estudiante'):
+        if self.rol == 'Profesor' and hasattr(self, 'estudiante'):
             raise ValidationError('Un usuario no puede ser estudiante y profesor a la vez')
 
 
-class Estudiante(models.Model):
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='estudiante')
-    codigo_estudiante = models.PositiveIntegerField(unique=True)
-    carrera = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.usuario.username
-
-    class Meta:
-        verbose_name = "Estudiante"
-        verbose_name_plural = "Estudiantes"
-
-    def clean(self):
-        if Profesor.objects.filter(usuario=self.usuario).exists():
-            raise ValidationError('El usuario ya tiene un perfil de profesor')
-        
-
-class Profesor(models.Model):
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profesor')
-    codigo_profesor = models.PositiveIntegerField(unique=True)
-    facultad = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.usuario.username
-
-    class Meta:
-        verbose_name = "Profesor"
-        verbose_name_plural = "Profesores"
-
-    def clean(self):
-        if Estudiante.objects.filter(usuario=self.usuario).exists():
-            raise ValidationError('El usuario ya tiene un perfil de estudiante')
-
-        
 class Cuenta(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='cuenta')
     saldo = models.DecimalField(max_digits=10, decimal_places=2)
@@ -79,6 +47,7 @@ class Dependencia(models.Model):
     tipo_dependencia = models.CharField(max_length=50)
     saldo = models.DecimalField(max_digits=10, decimal_places=2)
     usuarios = models.ManyToManyField(Usuario, related_name='dependencias', blank=True)
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nombre
@@ -88,3 +57,64 @@ class Dependencia(models.Model):
         verbose_name_plural = "Dependencias"
 
 
+class Envio(models.Model):
+    id_envio = models.PositiveIntegerField(unique=True)
+    origen = models.ForeignKey(Cuenta, on_delete=models.CASCADE, related_name='envios_realizados')
+    destino = models.ForeignKey(Cuenta, on_delete=models.CASCADE, related_name='envios_recibidos')
+    fecha = models.DateTimeField(auto_now_add=True)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    estado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Envío {self.id_envio} de {self.origen.usuario.nombres} {self.origen.usuario.apellidos} a {self.destino.usuario.nombres} {self.destino.usuario.apellidos}'
+
+    class Meta:
+        verbose_name = "Envío"
+        verbose_name_plural = "Envíos"
+
+
+class Transaccion(models.Model):
+    dependencia = models.ForeignKey(Dependencia, on_delete=models.CASCADE, related_name='transacciones')
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='transacciones')
+    info_factura = models.CharField(max_length=100)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha = models.DateTimeField(auto_now_add=True)
+    fecha_vencimiento = models.DateTimeField(null=True, blank=True)
+    pagada = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Transacción {self.id} de {self.usuario.user.username} a {self.dependencia.nombre}'
+
+    class Meta:
+        verbose_name = "Transacción"
+        verbose_name_plural = "Transacciones"
+        ordering = ['-fecha']
+
+    def clean(self):
+        if self.monto <= 0:
+            raise ValidationError('El monto de la transacción debe ser mayor a cero')
+        if self.fecha_vencimiento and self.fecha_vencimiento <= self.fecha:
+            raise ValidationError('La fecha de vencimiento debe ser posterior a la fecha actual')
+    
+    def save(self, *args, **kwargs):
+        # Verificar que el usuario tenga suficiente saldo para pagar la transacción
+        if self.usuario.cuenta.saldo < self.monto:
+            raise ValidationError('El usuario no tiene suficiente saldo para realizar esta transacción')
+        # Restar el monto de la cuenta del usuario
+        self.usuario.cuenta.saldo -= self.monto
+        self.usuario.cuenta.save()
+        # Añadir el monto a la cuenta de la dependencia
+        self.dependencia.saldo += self.monto
+        self.dependencia.save()
+        super(Transaccion, self).save(*args, **kwargs)
+
+    def actualizar_estado(self):
+        if not self.pagada and self.fecha_vencimiento and self.fecha_vencimiento <= timezone.now():
+            self.pagada = True
+            self.save()
+
+    def notificar_usuario(self):
+        if not self.pagada and self.fecha_vencimiento and self.fecha_vencimiento <= timezone.now():
+            mensaje = f'La transacción {self.id} con la dependencia {self.dependencia.nombre} está pendiente de pago'
+            # Enviar notificación al usuario
+            pass
