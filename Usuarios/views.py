@@ -30,7 +30,7 @@ def login_user(request):
         
 @login_required
 def consola_estudiantes(request):
-    usuario = request.user.usuario #Llama al usuario que tiene la sesion iniciada
+    usuario = request.user.Usuario #Llama al usuario que tiene la sesion iniciada
     
     
     nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
