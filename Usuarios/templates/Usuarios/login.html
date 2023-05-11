@@ -4,7 +4,7 @@
 {% block title %}Login{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'Usuarios/css/login.css' %}">    
+    <link rel="stylesheet" href="{% static 'Usuarios/css/login.css' %}">
 {% endblock %}
 
 {% block extra_js %}
@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container-fluid col-5">
+    <div class="container-fluid col-md-6 mx-auto">
         <h2 class="text-center">INICIAR SESIÓN</h2>
         <form method="post" action="{% url 'login_user' %}">
             {% csrf_token %}
@@ -20,18 +20,18 @@
                 <label for="id_email" class="form-label text-start">Correo Electrónico o Nombre de Usuario</label>
                 <input type="text" class="form-control" id="id_email" name="username" placeholder="Ingrese su correo electrónico o nombre de usuario" aria-describedby="emailHelp">
                 <div id="emailHelp" class="form-text">Nunca compartiremos su correo electrónico con nadie más.</div>
-            </div>            
-        
+            </div>
+
             <div class="mb-3">
                 <label for="id_password" class="form-label text-start">Contraseña</label>
                 <input type="password" class="form-control" id="id_password" name="password">
             </div>
-        
+
             <div class="mb-3 form-check d-flex justify-content-center">
                 <input type="checkbox" class="form-check-input" id="exampleCheck1" name="remember">
                 <label class="form-check-label px-3" for="exampleCheck1">Recordarme.</label>
             </div>
-                
+
             <div class="d-flex justify-content-center">
                 <button type="submit" class="btn btn-primary mx-auto">INGRESAR</button>
             </div>
@@ -40,8 +40,12 @@
                 <div id="alerta" class="alert alert-danger" role="alert">
                     {{ error_message }}
                 </div>
-            {% endif %}           
-            
+            {% endif %}
+
         </form>
     </div>
 {% endblock %}
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>

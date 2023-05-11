@@ -48,7 +48,9 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
+            <!-- Items de el nav lateral -->
+            {% block items_nav_dashboard_lateral %}
+
             <li class="nav-item active">
                 <a class="nav-link" href="{% url 'consola_estudiantes' %}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
@@ -141,20 +143,8 @@
                     <span>Tables</span></a>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
 
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
-            <!-- Sidebar Message -->
-            <div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="...">
-                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
-            </div>
+            {% endblock %}
 
         </ul>
         <!-- End of Sidebar -->
@@ -343,7 +333,7 @@
                                 onmouseleave="hideDropdown()">
                                 {{ nombre_completo }}
                             </span>
-                            <img class="img-profile rounded-circle" src="{{ foto_perfil }}" alt="{{ usuario.nombres }}" width="50" height="50">
+                            <img class="img-profile rounded-circle" src="../../../media/{{ foto_perfil }}" alt="{{ usuario.nombres }}" width="50" height="50">
 
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -399,8 +389,11 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                SEMESTRE (TOTAL A PAGAR)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ valor_pagar_semestre_str }} COP</div>
+                                                SEMESTRE (TOTAL A PAGAR)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                ${{ valor_semestre_str }} COP
+                                            </div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -439,8 +432,16 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                FECHASDE PAGO</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                                FECHAS DE PAGO</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                {% for fecha_limite in fechas_limite %}
+                                                    {% if fecha_actual >= fecha_limite %}
+                                                        <span style="color: red">{{ fecha_limite }}</span>
+                                                    {% else %}
+                                                        {{ fecha_limite }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -462,7 +463,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2021</span>
+                        <span>Copyright &copy; WalletUCC 2023*</span>
                     </div>
                 </div>
             </footer>

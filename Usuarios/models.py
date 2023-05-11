@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from datetime import datetime, timedelta
 
 
 class Usuario(models.Model):
@@ -34,9 +33,6 @@ class Estudiante(models.Model):
     class Meta:
         verbose_name = "Estudiante"
         verbose_name_plural = "Estudiantes"
-        
-    
-
 
 class Cuenta(models.Model):
     usuario_cuenta = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='cuenta')
@@ -129,7 +125,7 @@ class Transaccion(models.Model):
             raise ValidationError('El monto de la transacción debe ser mayor a cero')
         if self.fecha_vencimiento_transaccion and self.fecha_vencimiento_transaccion <= timezone.now():
             raise ValidationError('La fecha de vencimiento debe ser posterior a la fecha actual')
-    
+
     def save(self, *args, **kwargs):
         # Verificar que el usuario tenga suficiente saldo para pagar la transacción
         if self.usuario_destino.usuario_cuenta.saldo_usuario < self.monto_transaccion:
