@@ -433,15 +433,21 @@
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                                 FECHAS DE PAGO</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                                {% for fecha_limite in fechas_limite %}
-                                                    {% if fecha_actual >= fecha_limite %}
-                                                        <span style="color: red">{{ fecha_limite }}</span>
-                                                    {% else %}
-                                                        {{ fecha_limite }}
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                    {% with found_date=False %}
+                                                      {% for fecha_limite in fechas_limites_pago %}
+                                                        {% if not found_date and fecha_actual|date:'Y-m-d' >= fecha_limite|date:'Y-m-d' %}
+                                                          <span style="color: red;">{{ fecha_limite }}</span>
+                                                          {% with found_date=True %}
+                                                          {% endwith %}
+                                                        {% else %}
+                                                          {{ fecha_limite }}
+                                                        {% endif %}
+                                                      {% empty %}
+                                                        No hay fechas límite disponibles.
+                                                      {% endfor %}
+                                                    {% endwith %}
+                                                </div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-comments fa-2x text-gray-300"></i>

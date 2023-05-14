@@ -3,7 +3,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from datetime import date, datetime
+from Usuarios.models import Financiera
+from datetime import datetime
+
+
 
 
 import locale
@@ -30,58 +33,38 @@ def login_user(request):
     else:
         return render(request, 'Usuarios/login.html')
 
+# Lo que se llama cada vez que se recarga la consola estudiantes
 @login_required
 def consola_estudiantes(request):
-    usuario = request.user.usuario
+    fecha_actual = datetime.now()
 
-    nombre_completo = f"{usuario.nombres_usuario} {usuario.apellidos_usuario}"
+    usuario = request.user.usuario # se invoca al usuario que esta en linea
 
-    fechas_limite = get_fechas_limite()
-
-    foto_perfil_url = usuario.foto_perfil_usuario.url
-
+    # Se traen los datos del usuario
+    nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
     saldo = usuario.cuenta.saldo_usuario
     saldo_str = f"{saldo:,}"
     semestre_pagar = usuario.estudiante.semestre_a_pagar_estudiante
     valor_semestre_str = f"{usuario.estudiante.valor_semestre_estudiante:,}"
 
+    # Fechas limites de pago que el estudiante tiene para pagar el semestre
+    financieras = Financiera.objects.all()
+    primera_financiera = financieras.first()
+
+    fechas_limites_pago = [primera_financiera.fecha_limite_pago_1, primera_financiera.fecha_limite_pago_2, primera_financiera.fecha_limite_pago_3]
+
     return render(request, 'Estudiantes/consola_estudiantes.html', {
         'nombre_completo': nombre_completo,
-        'foto_perfil': foto_perfil_url,
         'saldo_str': saldo_str,
         'semestre_pagar': semestre_pagar,
         'valor_semestre_str': valor_semestre_str,
-        'fechas_limite': fechas_limite,
+        'fechas_limites_pago': fechas_limites_pago,
+        'fecha_actual': fecha_actual,
     })
 
 
 @login_required
 def aumento_semestre(request):
-    usuario = request.user.usuario
 
-    fecha_actual = datetime.now().date()
-
-    fechas_limite = get_fechas_limite()
-
-    valor_semestre = usuario.estudiante.valor_semestre_estudiante
-
-    for fecha in fechas_limite:
-        if fecha_actual > fecha:  # Corregir la condición aquí
-            if fecha >= fechas_limite[0] and fecha <= fechas_limite[1]:
-                valor_semestre *= decimal.Decimal('1.05')
-            elif fecha > fechas_limite[1] and fecha <= fechas_limite[2]:
-                valor_semestre *= decimal.Decimal('1.1')
-            elif fecha > fechas_limite[2]:
-                valor_semestre *= decimal.Decimal('1.15')
-
-    usuario.estudiante.valor_semestre_estudiante = valor_semestre
-    usuario.estudiante.save()
 
     return redirect('consola_estudiantes')
-
-def get_fechas_limite():
-    return [
-        date(2023, 5, 7),
-        date(2023, 7, 28),
-        date(2023, 8, 4),
-    ]

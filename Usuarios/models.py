@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 
 
+
 class Usuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nombres = models.CharField(max_length=50)
