@@ -1,9 +1,8 @@
 import decimal
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from Usuarios.models import Usuario
 from datetime import date, datetime
 
 
@@ -12,7 +11,7 @@ import locale
 # Configuración para localizar el formato de números en español (Colombia)
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
 
-
+# Auntificacion de usuario
 def login_user(request):
     if request.user.is_authenticated:
         return redirect('consola_estudiantes')
