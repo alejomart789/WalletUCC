@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from Usuarios.models import Financiera
-from datetime import datetime
+from datetime import date, datetime
 
 
 
@@ -13,6 +13,8 @@ import locale
 
 # Configuración para localizar el formato de números en español (Colombia)
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
+
+aumentos_aplicados = set()
 
 # Auntificacion de usuario
 def login_user(request):
@@ -36,9 +38,35 @@ def login_user(request):
 # Lo que se llama cada vez que se recarga la consola estudiantes
 @login_required
 def consola_estudiantes(request):
-    fecha_actual = datetime.now()
+    fecha_actual = date.today()
 
-    usuario = request.user.usuario # se invoca al usuario que esta en linea
+    usuario = request.user.usuario  # se invoca al usuario que está en línea
+
+    # Fechas límites de pago que el estudiante tiene para pagar el semestre
+    financieras = Financiera.objects.all()
+    primera_financiera = financieras.first()
+
+    fechas_limites_pago = [primera_financiera.fecha_limite_pago_1, primera_financiera.fecha_limite_pago_2, primera_financiera.fecha_limite_pago_3]
+
+
+    # Verificar si el aumento ya se ha aplicado para cada fecha límite
+    if fecha_actual >= fechas_limites_pago[0] and fechas_limites_pago[0] not in aumentos_aplicados:
+        # Aplicar el aumento correspondiente (2%)
+        usuario.estudiante.valor_semestre_estudiante *= decimal.Decimal('1.02')
+        aumentos_aplicados.add(fechas_limites_pago[0])
+
+    if fecha_actual >= fechas_limites_pago[1] and fechas_limites_pago[1] not in aumentos_aplicados:
+        # Aplicar el aumento correspondiente (5%)
+        usuario.estudiante.valor_semestre_estudiante *= decimal.Decimal('1.05')
+        aumentos_aplicados.add(fechas_limites_pago[1])
+
+    if fecha_actual >= fechas_limites_pago[2] and fechas_limites_pago[2] not in aumentos_aplicados:
+        # Aplicar el aumento correspondiente (10%)
+        usuario.estudiante.valor_semestre_estudiante *= decimal.Decimal('1.10')
+        aumentos_aplicados.add(fechas_limites_pago[2])
+
+    # Guardar los cambios en el modelo Estudiante
+    usuario.estudiante.save()
 
     # Se traen los datos del usuario
     nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
@@ -46,12 +74,6 @@ def consola_estudiantes(request):
     saldo_str = f"{saldo:,}"
     semestre_pagar = usuario.estudiante.semestre_a_pagar_estudiante
     valor_semestre_str = f"{usuario.estudiante.valor_semestre_estudiante:,}"
-
-    # Fechas limites de pago que el estudiante tiene para pagar el semestre
-    financieras = Financiera.objects.all()
-    primera_financiera = financieras.first()
-
-    fechas_limites_pago = [primera_financiera.fecha_limite_pago_1, primera_financiera.fecha_limite_pago_2, primera_financiera.fecha_limite_pago_3]
 
     return render(request, 'Estudiantes/consola_estudiantes.html', {
         'nombre_completo': nombre_completo,
@@ -61,10 +83,3 @@ def consola_estudiantes(request):
         'fechas_limites_pago': fechas_limites_pago,
         'fecha_actual': fecha_actual,
     })
-
-
-@login_required
-def aumento_semestre(request):
-
-
-    return redirect('consola_estudiantes')
