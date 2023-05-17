@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "henessy-8a4fa"
-  }
+    "default": "henessy-8a4fa",
+    "henessy": "henessy-8a4fa"
+  },
+  "targets": {},
+  "etags": {}
 }
