@@ -6,15 +6,30 @@ from django.contrib import messages
 from Usuarios.models import Financiera
 from datetime import date, datetime
 
-
-
-
 import locale
 
 # Configuración para localizar el formato de números en español (Colombia)
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
 
 aumentos_aplicados = set()
+
+# Singleton y observer
+class ObservadorSemestre:
+    _instance = None # Singleton - Variable estatica para almacenar la unica instancia
+    
+    # Crear la instancia si no existe
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def actualizar_valor_semestre(self, usuario):
+        fecha_actual = date.today()
+
+        financiera = Financiera.objects.all()
+        
+
+
 
 # Auntificacion de usuario
 def login_user(request):
@@ -83,3 +98,5 @@ def consola_estudiantes(request):
         'fechas_limites_pago': fechas_limites_pago,
         'fecha_actual': fecha_actual,
     })
+
+

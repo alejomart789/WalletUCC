@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "django-express": "^1.0.0",
+    "firebase": "^9.22.0"
+  }
+}

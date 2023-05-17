@@ -157,7 +157,6 @@ SESSION_COOKIE_AGE = 300  # tiempo en segundos (5 minutos)
 
 LOGIN_URL = 'login_user'
 
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Configuración de archivos de medios
 MEDIA_URL = '/media/'
-
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

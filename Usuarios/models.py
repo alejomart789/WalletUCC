@@ -3,8 +3,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 
-
-
 class Usuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nombres = models.CharField(max_length=50)
@@ -49,15 +47,21 @@ class Cuenta(models.Model):
 
 
 class Financiera(models.Model):
-    saldo_financiera = models.DecimalField(max_digits=10, decimal_places=2)
-    usuarios_financiera = models.ManyToManyField(Usuario, related_name='financieras', blank=True)
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    saldo_financiera = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     ultima_actualizacion_financiera = models.DateTimeField(auto_now=True)
-    fecha_limite_pago_1 = models.DateField(blank=True, null=True)
-    fecha_limite_pago_2 = models.DateField(blank=True, null=True)
-    fecha_limite_pago_3 = models.DateField(blank=True, null=True)
+    
+    # Fechas limites de pago
+    fecha_limite_pago_1 = models.DateField()
+    fecha_limite_pago_2 = models.DateField()
+    fecha_limite_pago_3 = models.DateField()
 
     def __str__(self):
-        return str(self.saldo_financiera)
+        return f"Financiera {self.usuario.username}"
+
+    def save(self, *args, **kwargs):
+        if not Financiera.objects.filter(usuario=self.usuario).exists():
+            super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Financiera"
@@ -65,17 +69,25 @@ class Financiera(models.Model):
 
 
 class Transaccion(models.Model):
-    usuario_origen = models.ForeignKey(
-        Usuario,
-        on_delete=models.CASCADE,
-        related_name='transacciones_enviadas',
-        default=None
-    )
-    financiera_destino = models.ForeignKey(
+    ORIGEN_FINANCIERA = 'financiera'
+    DESTINO_USUARIO = 'usuario'
+    ORIGEN_CHOICES = [
+        (ORIGEN_FINANCIERA, 'Financiera'),
+        (DESTINO_USUARIO, 'Usuario'),
+    ]
+
+    origen = models.CharField(max_length=10, choices=ORIGEN_CHOICES, default=ORIGEN_FINANCIERA)
+    financiera = models.ForeignKey(
         Financiera,
         on_delete=models.CASCADE,
-        related_name='transacciones_recibidas',
-        default=None
+        related_name='transacciones_enviadas',
+        null=True,
+        blank=True
+    )
+    destino = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='transacciones_recibidas'
     )
     info_factura_dependencia = models.CharField(max_length=100)
     monto_transaccion = models.DecimalField(max_digits=10, decimal_places=2)
@@ -84,7 +96,25 @@ class Transaccion(models.Model):
     pagada_transaccion = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Transacción {self.id} de {self.usuario_origen.user.username} a {self.financiera_destino.nombre_financiera}'
+        return f'Transacción {self.id} de {self.origen} a {self.destino}'
+
+    def save(self, *args, **kwargs):
+        if self.origen == Transaccion.ORIGEN_FINANCIERA:
+            # Verificar si el origen es la financiera
+            financiera = Financiera.objects.first()
+
+            if self.destino == financiera.usuario:
+                raise ValidationError('No se puede enviar una transacción a la financiera')
+
+            financiera.saldo_financiera += self.monto_transaccion
+            financiera.save()
+            self.pagada_transaccion = True
+        else:
+            # Verificar si el origen es un usuario
+            if not isinstance(self.destino, Usuario):
+                raise ValidationError('El destino debe ser un usuario')
+
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Transacción'
@@ -95,13 +125,13 @@ class Transaccion(models.Model):
 class Envio(models.Model):
     id_envio = models.PositiveIntegerField(unique=True)
     origen_cuenta = models.ForeignKey(Cuenta, on_delete=models.CASCADE, related_name='envios_realizados')
-    destino_cuenta = models.ForeignKey(Cuenta, on_delete =models.CASCADE, related_name='envios_recibidos')
+    destino_cuenta = models.ForeignKey(Cuenta, on_delete=models.CASCADE, related_name='envios_recibidos')
     fecha_envio = models.DateTimeField(auto_now_add=True)
     monto_envio = models.DecimalField(max_digits=10, decimal_places=2)
     estado_envio = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Envío {self.id_envio} de {self.origen_cuenta.usuario.nombres_usuario} {self.origen_cuenta.usuario.apellidos_usuario} a {self.destino_cuenta.usuario.nombres_usuario} {self.destino_cuenta.usuario.apellidos_usuario}'
+        return f'Envío {self.id_envio} de {self.origen_cuenta.usuario.nombres} {self.origen_cuenta.usuario.apellidos} a {self.destino_cuenta.usuario.nombres} {self.destino_cuenta.usuario.apellidos}'
 
     class Meta:
         verbose_name = "Envío"
