@@ -1,7 +1,7 @@
 {
   "hosting": {
     "site": "walletucc-prueba",
-    "public": "public",
+    "public": "/public",
     "ignore": [
       "firebase.json",
       "**/.*",
