@@ -364,13 +364,20 @@
 
                     <div id="popup">
                         <div id="popup-content">
-                          <h2>Realizar pago semestre</h2>
-                          <input type="radio" name="opcion" value="pago_total"> Realizar pago total<br>
-                          <input type="radio" name="opcion" value="abono" onchange="mostrarCampoAbono()"> Realizar abono<br>
-                          <div id="campo-abono" style="display: none;">
-                            <input type="number" id="valor-abono" placeholder="Ingrese el valor del abono">
-                          </div>
-                          <button onclick="obtenerOpcionSeleccionada()">Aceptar</button>
+                            <form method="post" id="payment-form">
+                                {% csrf_token %}
+                                <h2>Realizar pago semestre</h2>
+                                <label>
+                                  <input type="radio" name="opcion" value="pago_total"> Realizar pago total
+                                </label><br>
+                                <label>
+                                  <input type="radio" name="opcion" value="abono" onchange="mostrarCampoAbono()"> Realizar abono
+                                </label><br>
+                                <div id="campo-abono" style="display: none;">
+                                  <input type="number" id="valor-abono" placeholder="Ingrese el valor del abono">
+                                </div>
+                                <button type="submit">Aceptar</button> 
+                            </form>
                         </div>
                     </div>
 

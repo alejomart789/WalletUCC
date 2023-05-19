@@ -16,18 +16,17 @@ aumentos_aplicados = set()
 # Singleton y observer
 class ObservadorSemestre:
     _instance = None # Singleton - Variable estatica para almacenar la unica instancia
-    
+
     # Crear la instancia si no existe
     def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     def actualizar_valor_semestre(self, usuario):
         fecha_actual = date.today()
 
         financiera = Financiera.objects.all()
-        
 
 
 
@@ -100,3 +99,37 @@ def consola_estudiantes(request):
     })
 
 
+@login_required
+def aumento_semestre(request):
+    
+
+# Ralizar pago o abono del semestre
+@login_required
+def pago_semestre(request):
+    if request.method == 'POST':
+        opcion = request.POST.get('opcion')
+        valor_abono = request.POST.get('valor-abono')
+
+        if opcion == 'pago_total':
+            # Realizar acción correspondiente para pago total
+            # Por ejemplo, guardar el pago total en la base de datos
+            # ...
+            return redirect('consola_estudiantes')  # Redireccionar a la página de la consola de estudiantes
+
+        elif opcion == 'abono':
+            if valor_abono:
+                try:
+                    valor_abono = decimal.Decimal(valor_abono)
+                    if valor_abono > 0:
+                        # Realizar acción correspondiente para abono
+                        # Por ejemplo, guardar el abono en la base de datos
+                        # ...
+                        return redirect('consola_estudiantes')  # Redireccionar a la página de la consola de estudiantes
+                    else:
+                        messages.error(request, 'El valor del abono debe ser mayor que cero.')
+                except decimal.InvalidOperation:
+                    messages.error(request, 'El valor del abono es inválido.')
+            else:
+                messages.error(request, 'Ingrese un valor para el abono.')
+
+    return render(request, 'Estudiantes/consola_estudiantes.html')

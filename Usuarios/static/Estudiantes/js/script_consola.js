@@ -31,27 +31,7 @@ function cerrarPopup() {
   overlay.style.display = "none";
 }
 
-function obtenerOpcionSeleccionada() {
-  var opcionSeleccionada = document.querySelector('input[name="opcion"]:checked').value;
-
-  if (opcionSeleccionada === "pago_total") {
-    var valor = 1000; // Valor del pago total (ejemplo)
-    alert("Pago total: $" + valor);
-  } else if (opcionSeleccionada === "abono") {
-    var valorAbono = document.getElementById("valor-abono").value;
-    alert("Abono: $" + valorAbono);
-  }
-
-  cerrarPopup();
-}
-
 function mostrarCampoAbono() {
-  var opcionAbono = document.querySelector('input[value="abono"]');
-  var campoAbono = document.getElementById("campo-abono");
-
-  if (opcionAbono.checked) {
-    campoAbono.style.display = "block";
-  } else {
-    campoAbono.style.display = "none";
-  }
+  var campoAbono = document.getElementById('campo-abono');
+  campoAbono.style.display = event.target.checked ? 'block' : 'none';
 }
