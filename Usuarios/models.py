@@ -25,6 +25,9 @@ class Estudiante(models.Model):
     valor_semestre_estudiante = models.DecimalField(max_digits=15, decimal_places=2)
     creditos_registrados_estudiante = models.PositiveIntegerField()
     semestre_a_pagar_estudiante = models.PositiveIntegerField()
+    aumento_1 = models.BooleanField(default=False)
+    aumento_2 = models.BooleanField(default=False)
+    aumento_3 = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.usuario.nombres} {self.usuario.apellidos} - Semestre {self.semestre_a_pagar_estudiante}"
@@ -46,26 +49,42 @@ class Cuenta(models.Model):
         verbose_name_plural = "Cuentas"
 
 
-class Financiera(models.Model):
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+class SingletonModel(models.Model):
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # Establece el valor de clave primaria a 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass  # Evita que se pueda eliminar la instancia
+
+
+class FinancieraManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(pk=1)
+
+
+class Financiera(SingletonModel):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='financiera')
     saldo_financiera = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     ultima_actualizacion_financiera = models.DateTimeField(auto_now=True)
 
-    # Fechas limites de pago
+    # Fechas límites de pago
     fecha_limite_pago_1 = models.DateField()
     fecha_limite_pago_2 = models.DateField()
     fecha_limite_pago_3 = models.DateField()
 
-    aumento_1 = models.BooleanField(default=False)
-    aumento_2 = models.BooleanField(default=False)
-    aumento_3 = models.BooleanField(default=False)
-    
+    objects = FinancieraManager()
+
     def __str__(self):
         return f"Financiera {self.usuario.username}"
 
     def save(self, *args, **kwargs):
-        if not Financiera.objects.filter(usuario=self.usuario).exists():
-            super().save(*args, **kwargs)
+        if not self.pk and Financiera.objects.exists():
+            raise ValidationError("Ya existe una instancia de Financiera. Solo puede haber una.")
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Financiera"

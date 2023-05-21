@@ -1,36 +1,75 @@
-import decimal
+from abc import ABC, abstractmethod
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from Usuarios.models import Financiera
 from datetime import date, datetime
+from decimal import Decimal
 
 import locale
 
-# Configuración para localizar el formato de números en español (Colombia)
-locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
+class Observable:
+    def __init__(self):
+        self.observadores = []
 
-aumentos_aplicados = set()
+    def agregar_observador(self, observador):
+        self.observadores.append(observador)
 
-# Singleton y observer
-class ObservadorSemestre:
-    _instance = None # Singleton - Variable estatica para almacenar la unica instancia
+    def eliminar_observador(self, observador):
+        self.observadores.remove(observador)
 
-    # Crear la instancia si no existe
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+    def notificar_observadores(self, evento):
+        for observador in self.observadores:
+            observador.actualizar(evento)
 
-    def actualizar_valor_semestre(self, usuario):
-        fecha_actual = date.today()
+class Observador(ABC):
+    @abstractmethod
+    def actualizar(self, evento):
+        pass
 
-        financiera = Financiera.objects.all()
+class ObservadorAumentoSemestre(Observador):
+    def __init__(self, estudiante, request):
+        self.estudiante = estudiante
+        self.request = request
+
+    def actualizar(self, evento):
+        fecha_actual = evento['fecha_actual']
+        financiera = evento['financiera']
+
+        if fecha_actual > financiera.fecha_limite_pago_1 and not self.estudiante.aumento_1:
+            self.estudiante.valor_semestre_estudiante *= Decimal(1.02)  # Aumento del 2%
+            self.estudiante.aumento_1 = True
+            self.estudiante.save()
+
+            # Enviar notificación al estudiante
+            mensaje = 'Se ha aplicado un aumento del 2% al valor del semestre.'
+            self.enviar_notificacion(mensaje)
+
+        if fecha_actual > financiera.fecha_limite_pago_2 and not self.estudiante.aumento_2:
+            self.estudiante.valor_semestre_estudiante *= Decimal(1.05)  # Aumento del 5%
+            self.estudiante.aumento_2 = True
+            self.estudiante.save()
+
+            # Enviar notificación al estudiante
+            mensaje = 'Se ha aplicado un aumento del 5% al valor del semestre.'
+            self.enviar_notificacion(mensaje)
+
+        if fecha_actual > financiera.fecha_limite_pago_3 and not self.estudiante.aumento_3:
+            self.estudiante.valor_semestre_estudiante *= Decimal(1.05)  # Aumento del 5%
+            self.estudiante.aumento_3 = True
+            self.estudiante.save()
+
+            # Enviar notificación al estudiante
+            mensaje = 'Se ha aplicado un aumento del 5% al valor del semestre.'
+            self.enviar_notificacion(mensaje)
+
+    def enviar_notificacion(self, mensaje):
+        # Utilizar el framework de mensajes para mostrar la notificación
+        messages.info(self.request, mensaje)
 
 
-
-# Auntificacion de usuario
+# Autenticación de usuario
 def login_user(request):
     if request.user.is_authenticated:
         return redirect('consola_estudiantes')
@@ -49,87 +88,56 @@ def login_user(request):
     else:
         return render(request, 'Usuarios/login.html')
 
-# Lo que se llama cada vez que se recarga la consola estudiantes
+# Vista de la consola de estudiantes
 @login_required
 def consola_estudiantes(request):
     fecha_actual = date.today()
+    usuario = request.user.usuario
 
-    usuario = request.user.usuario  # se invoca al usuario que está en línea
+    financiera = Financiera.objects.first()
+
+    estudiante = usuario.estudiante
+    observador_aumento_semestre = ObservadorAumentoSemestre(estudiante, request)
+
+    
+
+    observable = Observable()
+    observable.agregar_observador(observador_aumento_semestre)
+    
+    evento = {
+    'fecha_actual': fecha_actual,
+    'financiera': financiera,
+    }
+
+    # Eliminar las notificaciones más antiguas después de 24 horas
+    messages.get_messages(request).expire_seconds = 86400
+    
+    observable.notificar_observadores(evento)
+
 
     # Fechas límites de pago que el estudiante tiene para pagar el semestre
-    financieras = Financiera.objects.all()
-    primera_financiera = financieras.first()
+    fechas_limites_pago = [
+        financiera.fecha_limite_pago_1,
+        financiera.fecha_limite_pago_2,
+        financiera.fecha_limite_pago_3
+    ]
 
-    fechas_limites_pago = [primera_financiera.fecha_limite_pago_1, primera_financiera.fecha_limite_pago_2, primera_financiera.fecha_limite_pago_3]
 
-
-    # Verificar si el aumento ya se ha aplicado para cada fecha límite
-    if fecha_actual >= fechas_limites_pago[0] and fechas_limites_pago[0] not in aumentos_aplicados:
-        # Aplicar el aumento correspondiente (2%)
-        usuario.estudiante.valor_semestre_estudiante *= decimal.Decimal('1.02')
-        aumentos_aplicados.add(fechas_limites_pago[0])
-
-    if fecha_actual >= fechas_limites_pago[1] and fechas_limites_pago[1] not in aumentos_aplicados:
-        # Aplicar el aumento correspondiente (5%)
-        usuario.estudiante.valor_semestre_estudiante *= decimal.Decimal('1.05')
-        aumentos_aplicados.add(fechas_limites_pago[1])
-
-    if fecha_actual >= fechas_limites_pago[2] and fechas_limites_pago[2] not in aumentos_aplicados:
-        # Aplicar el aumento correspondiente (10%)
-        usuario.estudiante.valor_semestre_estudiante *= decimal.Decimal('1.10')
-        aumentos_aplicados.add(fechas_limites_pago[2])
-
-    # Guardar los cambios en el modelo Estudiante
-    usuario.estudiante.save()
 
     # Se traen los datos del usuario
     nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
     saldo = usuario.cuenta.saldo_usuario
-    saldo_str = f"{saldo:,}"
+    saldo_str = locale.format_string('%.2f', saldo, grouping=True)
     semestre_pagar = usuario.estudiante.semestre_a_pagar_estudiante
-    valor_semestre_str = f"{usuario.estudiante.valor_semestre_estudiante:,}"
+    valor_semestre_str = locale.format_string('%.2f', usuario.estudiante.valor_semestre_estudiante, grouping=True)
 
     return render(request, 'Estudiantes/consola_estudiantes.html', {
-        'nombre_completo': nombre_completo,
-        'saldo_str': saldo_str,
-        'semestre_pagar': semestre_pagar,
-        'valor_semestre_str': valor_semestre_str,
-        'fechas_limites_pago': fechas_limites_pago,
-        'fecha_actual': fecha_actual,
+    'nombre_completo': nombre_completo,
+    'saldo_str': saldo_str,
+    'semestre_pagar': semestre_pagar,
+    'valor_semestre_str': valor_semestre_str,
+    'fechas_limites_pago': fechas_limites_pago,
+    'fecha_actual': fecha_actual,
+    'messages': list(messages.get_messages(request)),
     })
 
-
-@login_required
-def aumento_semestre(request):
-    
-
-# Ralizar pago o abono del semestre
-@login_required
-def pago_semestre(request):
-    if request.method == 'POST':
-        opcion = request.POST.get('opcion')
-        valor_abono = request.POST.get('valor-abono')
-
-        if opcion == 'pago_total':
-            # Realizar acción correspondiente para pago total
-            # Por ejemplo, guardar el pago total en la base de datos
-            # ...
-            return redirect('consola_estudiantes')  # Redireccionar a la página de la consola de estudiantes
-
-        elif opcion == 'abono':
-            if valor_abono:
-                try:
-                    valor_abono = decimal.Decimal(valor_abono)
-                    if valor_abono > 0:
-                        # Realizar acción correspondiente para abono
-                        # Por ejemplo, guardar el abono en la base de datos
-                        # ...
-                        return redirect('consola_estudiantes')  # Redireccionar a la página de la consola de estudiantes
-                    else:
-                        messages.error(request, 'El valor del abono debe ser mayor que cero.')
-                except decimal.InvalidOperation:
-                    messages.error(request, 'El valor del abono es inválido.')
-            else:
-                messages.error(request, 'Ingrese un valor para el abono.')
-
-    return render(request, 'Estudiantes/consola_estudiantes.html')
