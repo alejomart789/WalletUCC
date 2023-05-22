@@ -259,7 +259,13 @@
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
+                                <script src="https://cdn.lordicon.com/bhenfmcm.js"></script>
+                                <lord-icon
+                                    src="https://cdn.lordicon.com/psnhyobz.json"
+                                    trigger="hover"
+                                    colors="primary:#121331"
+                                    style="width:18px;height:18px">
+                                </lord-icon>
                                 <!-- Counter - Messages -->
                                 <span class="badge badge-danger badge-counter">7</span>
                             </a>
@@ -267,14 +273,15 @@
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="messagesDropdown">
                                 <h6 class="dropdown-header">
-                                    Message Center
+                                    Centro de Mensajes
                                 </h6>
                                 {% for mensaje in mensajes %}
                                     <div class="alert alert-info">{{ mensaje }}</div>
                                 {% endfor %}
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
+                                <a class="dropdown-item text-center small text-gray-500" href="#">Leer mas mensajes</a>
                             </div>
                         </li>
+
 
 
                         <div class="topbar-divider d-none d-sm-block"></div>
@@ -332,11 +339,10 @@
                                 <div id="campo-abono" style="display: none;">
                                   <input type="number" id="valor-abono" placeholder="Ingrese el valor del abono">
                                 </div>
-                                <button type="submit">Aceptar</button> 
+                                <button type="submit">Aceptar</button>
                             </form>
                         </div>
                     </div>
-
 
                     <!-- Content Row -->
                     <div class="row">

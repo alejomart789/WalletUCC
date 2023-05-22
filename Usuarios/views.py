@@ -51,7 +51,6 @@ class ObservadorSemestre:
 
         self.estudiante.save()
         messages.info(request, mensaje)
-        print(mensaje)
 
 
 
