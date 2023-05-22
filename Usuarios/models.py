@@ -25,6 +25,10 @@ class Estudiante(models.Model):
     valor_semestre_estudiante = models.DecimalField(max_digits=15, decimal_places=2)
     creditos_registrados_estudiante = models.PositiveIntegerField()
     semestre_a_pagar_estudiante = models.PositiveIntegerField()
+    
+    aumento_1 = models.BooleanField(default=False)
+    aumento_2 = models.BooleanField(default=False)
+    aumento_3 = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.usuario.nombres} {self.usuario.apellidos} - Semestre {self.semestre_a_pagar_estudiante}"
@@ -56,9 +60,7 @@ class Financiera(models.Model):
     fecha_limite_pago_2 = models.DateField()
     fecha_limite_pago_3 = models.DateField()
 
-    aumento_1 = models.BooleanField(default=False)
-    aumento_2 = models.BooleanField(default=False)
-    aumento_3 = models.BooleanField(default=False)
+    
     
     def __str__(self):
         return f"Financiera {self.usuario.username}"
