@@ -203,18 +203,16 @@
                                 </form>
                             </div>
                         </li>
-
+                    
                         <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <li class="nav-item dropdown no-arrow mx-1" id="alertsDropdown">
+                            <a class="nav-link dropdown-toggle" id="alertsDropdownLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
                                 <span class="badge badge-danger badge-counter">3+</span>
                             </a>
                             <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdownLink">
                                 <h6 class="dropdown-header">
                                     Alerts Center
                                 </h6>
@@ -256,62 +254,48 @@
                         </li>
 
                         <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <script src="https://cdn.lordicon.com/bhenfmcm.js"></script>
-                                <lord-icon
-                                    src="https://cdn.lordicon.com/psnhyobz.json"
-                                    trigger="hover"
-                                    colors="primary:#121331"
-                                    style="width:18px;height:18px">
-                                </lord-icon>
+                        <li class="nav-item dropdown no-arrow mx-1" id="messagesDropdown">
+                            <a class="nav-link dropdown-toggle" id="messagesDropdownLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <lord-icon src="https://cdn.lordicon.com/psnhyobz.json" trigger="hover" colors="primary:#121331" style="width:25px;height:25px"></lord-icon>
                                 <!-- Counter - Messages -->
                                 <span class="badge badge-danger badge-counter">7</span>
                             </a>
                             <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="messagesDropdownLink">
                                 <h6 class="dropdown-header">
                                     Centro de Mensajes
                                 </h6>
                                 {% for mensaje in mensajes %}
                                     <div class="alert alert-info">{{ mensaje }}</div>
                                 {% endfor %}
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Leer mas mensajes</a>
+                                <a class="dropdown-item text-center small text-gray-500" href="#">Leer más mensajes</a>
                             </div>
                         </li>
-
-
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow d-flex align-items-center">
-                            <span class="mr-2 d-none d-lg-inline text-gray-600 small dropdown-toggle"
-                            href="#" id="userDropdown" role="button"
-                            data-toggle="dropdown" aria-haspopup="true"
-                            aria-expanded="false">
-                            {{ nombre_completo }}
+                            <span id="profileName" class="mr-2 d-none d-lg-inline text-gray-600 small dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{ nombre_completo }}
                             </span>
-                            <img class="img-profile rounded-circle" src="../../../media/{{ foto_perfil }}" alt="{{ usuario.nombres }}" width="50" height="50">
-                        
+                            <img id="profileImage" class="img-profile rounded-circle" src="../../../media/{{ foto_perfil }}" alt="{{ usuario.nombres }}" width="50" height="50">
+
                             <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                            aria-labelledby="userDropdown">
-                            <a class="dropdown-item" href="{% url 'logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                Mi cuenta
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{% url 'logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                Salir
-                            </a>
+                            <div id="userDropdown" class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="profileName">
+                                <a class="dropdown-item" href="{% url 'logout' %}" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Mi cuenta
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'logout' %}" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Salir
+                                </a>
                             </div>
                         </li>
-                    </ul>
 
+                    </ul>                    
                 </nav>
                 <!-- End of Topbar -->
 
@@ -328,21 +312,26 @@
 
                     <div id="popup">
                         <div id="popup-content">
-                            <form method="post" id="payment-form">
+                            <form method="post" action="{% url 'realizar_pago_semestre' %}" id="payment-form">
                                 {% csrf_token %}
                                 <h2>Realizar pago semestre</h2>
                                 <label>
-                                  <input type="radio" name="opcion" value="pago_total"> Realizar pago total
+                                    <input type="radio" name="opcion" value="pago_total"> Realizar pago total
                                 </label><br>
                                 <label>
-                                  <input type="radio" name="opcion" value="abono" onchange="mostrarCampoAbono()"> Realizar abono
+                                    <input type="radio" name="opcion" value="abono" onchange="mostrarCampoAbono()"> Realizar abono
                                 </label><br>
                                 <div id="campo-abono" style="display: none;">
-                                  <input type="number" id="valor-abono" placeholder="Ingrese el valor del abono">
+                                    <input type="number" id="valor-abono" name="valor_abono" placeholder="Ingrese el valor del abono">
                                 </div>
                                 <button type="submit">Aceptar</button>
                             </form>
-                        </div>
+                            {% for message in messages %}
+                                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>                        
                     </div>
 
                     <!-- Content Row -->
@@ -494,7 +483,10 @@
     <script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script src="https://cdn.lordicon.com/bhenfmcm.js"></script>
+
     <script src="{% static 'Estudiantes\js\script_consola.js' %}"></script>
+
 
 
 

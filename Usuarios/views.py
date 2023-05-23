@@ -5,6 +5,10 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from Usuarios.models import Financiera
 from datetime import date, datetime
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from Usuarios.models import Estudiante, Cuenta
+
 
 from decimal import Decimal
 from django.http import HttpResponse
@@ -115,3 +119,38 @@ def consola_estudiantes(request):
     })
 
 
+def realizar_pago_semestre(request):
+    if request.method == 'POST':
+        opcion = request.POST.get('opcion')
+        usuario = request.user.usuario
+        estudiante = usuario.estudiante
+        cuenta = usuario.cuenta
+
+        if opcion == 'pago_total':
+            saldo_suficiente = cuenta.saldo_usuario >= estudiante.valor_semestre_estudiante
+            if saldo_suficiente:
+                cuenta.saldo_usuario -= Decimal(estudiante.valor_semestre_estudiante)
+                cuenta.save()
+                estudiante.valor_semestre_estudiante = Decimal(0)
+                estudiante.save()
+                messages.success(request, '¡Pago realizado!')
+            else:
+                messages.error(request, 'Saldo insuficiente para realizar el pago total del semestre.')
+        elif opcion == 'abono':
+            valor_abono = request.POST.get('valor_abono')
+            if valor_abono:
+                valor_abono = Decimal(valor_abono)
+                if valor_abono <= cuenta.saldo_usuario:
+                    estudiante.valor_semestre_estudiante -= valor_abono
+                    cuenta.saldo_usuario -= valor_abono
+                    cuenta.save()
+                    estudiante.save()
+                    messages.success(request, '¡Abono realizado!')
+                    if estudiante.valor_semestre_estudiante == Decimal(0):
+                        messages.info(request, '¡Se ha completado el pago total del semestre!')
+                else:
+                    messages.error(request, 'Saldo insuficiente para realizar el abono.')
+            else:
+                messages.error(request, 'Ingrese un valor válido para el abono.')
+
+    return redirect('consola_estudiantes')
