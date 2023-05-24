@@ -79,44 +79,6 @@ def login_user(request):
         return render(request, 'Usuarios/login.html')
 
 # Lo que se llama cada vez que se recarga la consola estudiantes
-@login_required
-def consola_estudiantes(request):
-    fecha_actual = date.today()
-
-    usuario = request.user.usuario  # se invoca al usuario que está en línea
-
-    # Fechas límites de pago que el estudiante tiene para pagar el semestre
-    financieras = Financiera.objects.all()
-    primera_financiera = financieras.first()
-
-    fechas_limites_pago = [primera_financiera.fecha_limite_pago_1, primera_financiera.fecha_limite_pago_2, primera_financiera.fecha_limite_pago_3]
-
-
-    # Crear instancia del observador del semestre y actualizar
-    observador_semestre = ObservadorSemestre(usuario.estudiante, primera_financiera)
-    observador_semestre.actualizar(request)
-
-    # Obtener los mensajes y pasarlos al contexto
-    mensajes = []
-    for mensaje in messages.get_messages(request):
-        mensajes.append(mensaje)
-
-    # Se traen los datos del usuario
-    nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
-    saldo = usuario.cuenta.saldo_usuario
-    saldo_str = f"{saldo:,}"
-    semestre_pagar = usuario.estudiante.semestre_a_pagar_estudiante
-    valor_semestre_str = f"{usuario.estudiante.valor_semestre_estudiante:,}"
-
-    return render(request, 'Estudiantes/consola_estudiantes.html', {
-        'nombre_completo': nombre_completo,
-        'saldo_str': saldo_str,
-        'semestre_pagar': semestre_pagar,
-        'valor_semestre_str': valor_semestre_str,
-        'fechas_limites_pago': fechas_limites_pago,
-        'fecha_actual': fecha_actual,
-        'mensajes': mensajes,  # Agregar los mensajes al contexto
-    })
 
 
 def realizar_pago_semestre(request):
@@ -154,3 +116,89 @@ def realizar_pago_semestre(request):
                 messages.error(request, 'Ingrese un valor válido para el abono.')
 
     return redirect('consola_estudiantes')
+
+@login_required
+def consola_estudiantes(request):
+    fecha_actual = date.today()
+
+    usuario = request.user.usuario  # se invoca al usuario que está en línea
+
+    # Fechas límites de pago que el estudiante tiene para pagar el semestre
+    financieras = Financiera.objects.all()
+    primera_financiera = financieras.first()
+
+    fechas_limites_pago = [primera_financiera.fecha_limite_pago_1, primera_financiera.fecha_limite_pago_2, primera_financiera.fecha_limite_pago_3]
+
+
+    # Crear instancia del observador del semestre y actualizar
+    observador_semestre = ObservadorSemestre(usuario.estudiante, primera_financiera)
+    observador_semestre.actualizar(request)
+
+    # Obtener los mensajes y pasarlos al contexto
+    mensajes = []
+    for mensaje in messages.get_messages(request):
+        mensajes.append(mensaje)
+
+    # Se traen los datos del usuario
+    nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
+    saldo = usuario.cuenta.saldo_usuario
+    saldo_str = f"{saldo:,}"
+    semestre_pagar = usuario.estudiante.semestre_a_pagar_estudiante
+    valor_semestre_str = f"{usuario.estudiante.valor_semestre_estudiante:,}"
+    
+    foto_perfil = f"{usuario.foto_perfil}"
+
+    return render(request, 'Estudiantes/consola_estudiantes.html', {
+        'nombre_completo': nombre_completo,
+        'saldo_str': saldo_str,
+        'semestre_pagar': semestre_pagar,
+        'valor_semestre_str': valor_semestre_str,
+        'fechas_limites_pago': fechas_limites_pago,
+        'fecha_actual': fecha_actual,
+        'foto_perfil': foto_perfil,
+        'mensajes': mensajes,  # Agregar los mensajes al contexto
+    })
+
+
+@login_required
+def actualizar_perfil(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        foto_perfil = request.FILES.get('foto_perfil')
+
+        usuario = request.user.usuario
+        usuario.email = email
+
+        if foto_perfil:
+            # Validar que el archivo sea de tipo PNG
+            if not foto_perfil.name.lower().endswith('.png'):
+                return redirect('perfil_estudiante')
+
+            # Guardar la foto de perfil en el campo 'foto_perfil' del modelo
+            usuario.foto_perfil.save(foto_perfil.name, foto_perfil)
+
+        usuario.save()
+
+    return redirect('perfil_estudiante')
+
+@login_required
+def perfil_estudiante(request):
+    usuario = request.user.usuario
+
+    nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
+    nombre = f"{usuario.nombres}"
+    apellidos = f"{usuario.apellidos}"
+    
+    email = f"{usuario.email}"
+    foto_perfil = f"{usuario.foto_perfil}"
+    
+    identificacion = f"{usuario.identificacion}"
+
+    return render(request, 'Estudiantes/perfil_estudiante.html', {
+        'nombre_completo': nombre_completo,
+        'nombre' : nombre,
+        'apellidos': apellidos,
+        'email': email,
+        'foto_perfil': foto_perfil,
+        'identificacion': identificacion,
+    })
