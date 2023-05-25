@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 
+
+
 class Usuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nombres = models.CharField(max_length=50)
@@ -50,6 +52,16 @@ class Cuenta(models.Model):
         verbose_name_plural = "Cuentas"
 
 
+ESTADO_PENDIENTE = 'pendiente'
+ESTADO_PAGADA = 'pagada'
+ESTADO_ABONADO = 'abonado'
+
+ESTADO_CHOICES = [
+    (ESTADO_PENDIENTE, 'Pendiente'),
+    (ESTADO_PAGADA, 'Pagada'),
+    (ESTADO_ABONADO, 'Abonado'),
+]
+
 class Financiera(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     saldo_financiera = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -66,8 +78,7 @@ class Financiera(models.Model):
         return f"Financiera {self.usuario.username}"
 
     def save(self, *args, **kwargs):
-        if not Financiera.objects.filter(usuario=self.usuario).exists():
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Financiera"
@@ -75,58 +86,37 @@ class Financiera(models.Model):
 
 
 class Transaccion(models.Model):
-    ORIGEN_FINANCIERA = 'financiera'
-    DESTINO_USUARIO = 'usuario'
-    ORIGEN_CHOICES = [
-        (ORIGEN_FINANCIERA, 'Financiera'),
-        (DESTINO_USUARIO, 'Usuario'),
-    ]
-
-    origen = models.CharField(max_length=10, choices=ORIGEN_CHOICES, default=ORIGEN_FINANCIERA)
+    origen = models.CharField(max_length=255)
+    
     financiera = models.ForeignKey(
         Financiera,
         on_delete=models.CASCADE,
-        related_name='transacciones_enviadas',
+        related_name='transacciones_creadas',
         null=True,
         blank=True
     )
     destino = models.ForeignKey(
-        Usuario,
+        Estudiante,
         on_delete=models.CASCADE,
         related_name='transacciones_recibidas'
     )
-    info_factura_dependencia = models.CharField(max_length=100)
-    monto_transaccion = models.DecimalField(max_digits=10, decimal_places=2)
-    fecha_transaccion = models.DateTimeField(auto_now_add=True)
-    fecha_vencimiento_transaccion = models.DateTimeField(null=True, blank=True)
+    informacion_transaccion = models.CharField(max_length=100)
+    descripcion = models.TextField()
+    valor_transaccion = models.DecimalField(max_digits=10, decimal_places=2)
+    monto_transaccion = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fecha_transaccion = models.DateField(auto_now_add=True)
+    hora_transaccion = models.TimeField(auto_now_add=True)
+    fecha_vencimiento_transaccion = models.DateField(null=True, blank=True)
     pagada_transaccion = models.BooleanField(default=False)
+    estado_transaccion = models.CharField(max_length=10, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)
 
     def __str__(self):
-        return f'Transacción {self.id} de {self.origen} a {self.destino}'
-
-    def save(self, *args, **kwargs):
-        if self.origen == Transaccion.ORIGEN_FINANCIERA:
-            # Verificar si el origen es la financiera
-            financiera = Financiera.objects.first()
-
-            if self.destino == financiera.usuario:
-                raise ValidationError('No se puede enviar una transacción a la financiera')
-
-            financiera.saldo_financiera += self.monto_transaccion
-            financiera.save()
-            self.pagada_transaccion = True
-        else:
-            # Verificar si el origen es un usuario
-            if not isinstance(self.destino, Usuario):
-                raise ValidationError('El destino debe ser un usuario')
-
-        super().save(*args, **kwargs)
+        return f'Transacción {self.id} de Financiera a {self.destino}'
 
     class Meta:
         verbose_name = 'Transacción'
         verbose_name_plural = 'Transacciones'
         ordering = ['-fecha_transaccion']
-
 
 class Envio(models.Model):
     id_envio = models.PositiveIntegerField(unique=True)

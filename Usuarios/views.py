@@ -7,7 +7,10 @@ from Usuarios.models import Financiera
 from datetime import date, datetime
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from Usuarios.models import Estudiante, Cuenta
+from Usuarios.models import Usuario, Estudiante, Financiera, Transaccion
+from dateutil import parser
+
+
 
 
 from decimal import Decimal
@@ -44,12 +47,12 @@ class ObservadorSemestre:
             mensaje = "¡Se ha aplicado el primer aumento al semestre!"
         elif aumento == 2:
             incremento = Decimal('0.05')
-            self.estudiante.semestre_a_pagar_estudiante += self.estudiante.valor_semestre_estudiante * incremento
+            self.estudiante.valor_semestre_estudiante += self.estudiante.valor_semestre_estudiante * incremento
             self.estudiante.aumento_2 = True
             mensaje = "¡Se ha aplicado el segundo aumento al semestre!"
         elif aumento == 3:
             incremento = Decimal('0.10')
-            self.estudiante.semestre_a_pagar_estudiante += self.estudiante.valor_semestre_estudiante * incremento
+            self.estudiante.valor_semestre_estudiante += self.estudiante.valor_semestre_estudiante * incremento
             self.estudiante.aumento_3 = True
             mensaje = "¡Se ha aplicado el tercer aumento al semestre!"
 
@@ -57,12 +60,15 @@ class ObservadorSemestre:
         messages.info(request, mensaje)
 
 
-
-
-# Auntificacion de usuario
 def login_user(request):
     if request.user.is_authenticated:
-        return redirect('consola_estudiantes')
+        usuario = Usuario.objects.get(user=request.user)
+
+        if Estudiante.objects.filter(usuario=usuario).exists():
+            return redirect('consola_estudiantes')
+
+        if Financiera.objects.filter(usuario=request.user).exists():
+            return redirect('consola_financiera')
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -70,17 +76,20 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('consola_estudiantes')
-        else:
-            error_message = 'Usuario o contraseña inválidos'
-            messages.error(request, error_message)
-            return render(request, 'Usuarios/login.html')
-    else:
-        return render(request, 'Usuarios/login.html')
+            usuario = Usuario.objects.get(user=user)
+            if Estudiante.objects.filter(usuario=usuario).exists():
+                return redirect('consola_estudiantes')
+
+            if Financiera.objects.filter(usuario=user).exists():
+                return redirect('consola_financiera')
+
+        error_message = 'Usuario o contraseña inválidos'
+        return render(request, 'Usuarios/login.html', {'error_message': error_message})
+    
+    return render(request, 'Usuarios/login.html')
+
 
 # Lo que se llama cada vez que se recarga la consola estudiantes
-
-
 def realizar_pago_semestre(request):
     if request.method == 'POST':
         opcion = request.POST.get('opcion')
@@ -148,16 +157,19 @@ def consola_estudiantes(request):
     
     foto_perfil = f"{usuario.foto_perfil}"
 
-    return render(request, 'Estudiantes/consola_estudiantes.html', {
+    context = {
+        'fecha_actual': fecha_actual,
         'nombre_completo': nombre_completo,
+        'saldo': saldo,
         'saldo_str': saldo_str,
         'semestre_pagar': semestre_pagar,
         'valor_semestre_str': valor_semestre_str,
         'fechas_limites_pago': fechas_limites_pago,
-        'fecha_actual': fecha_actual,
-        'foto_perfil': foto_perfil,
-        'mensajes': mensajes,  # Agregar los mensajes al contexto
-    })
+        'mensajes': mensajes,
+        'foto_perfil': foto_perfil
+    }
+
+    return render(request, 'Estudiantes/consola_estudiantes.html', context)
 
 
 @login_required
@@ -202,3 +214,138 @@ def perfil_estudiante(request):
         'foto_perfil': foto_perfil,
         'identificacion': identificacion,
     })
+
+
+@login_required
+def perfil_financiera(request):
+    usuario = request.user.usuario
+
+    nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
+    nombre = f"{usuario.nombres}"
+    apellidos = f"{usuario.apellidos}"
+    
+    email = f"{usuario.email}"
+    foto_perfil = f"{usuario.foto_perfil}"
+    
+    identificacion = f"{usuario.identificacion}"
+
+    return render(request, 'Financiera/perfil_financiera.html', {
+        'nombre_completo': nombre_completo,
+        'nombre' : nombre,
+        'apellidos': apellidos,
+        'email': email,
+        'foto_perfil': foto_perfil,
+        'identificacion': identificacion,
+    })
+
+@login_required
+def actualizar_perfil_financiera(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        foto_perfil = request.FILES.get('foto_perfil')
+
+        usuario = request.user.usuario
+        usuario.email = email
+
+        if foto_perfil:
+            # Validar que el archivo sea de tipo PNG
+            if not foto_perfil.name.lower().endswith('.png'):
+                return redirect('perfil_financiera')
+
+            # Guardar la foto de perfil en el campo 'foto_perfil' del modelo
+            usuario.foto_perfil.save(foto_perfil.name, foto_perfil)
+
+        usuario.save()
+
+    return redirect('perfil_financiera')
+
+
+@login_required
+def consola_financiera(request):
+    usuario = request.user.usuario
+    financiera = Financiera.objects.first()
+
+    if request.method == 'POST':
+        fecha_limite_pago_1 = request.POST.get('fecha_limite_pago_1')
+        fecha_limite_pago_2 = request.POST.get('fecha_limite_pago_2')
+        fecha_limite_pago_3 = request.POST.get('fecha_limite_pago_3')
+
+        financiera.fecha_limite_pago_1 = fecha_limite_pago_1
+        financiera.fecha_limite_pago_2 = fecha_limite_pago_2
+        financiera.fecha_limite_pago_3 = fecha_limite_pago_3
+
+        financiera.save()
+
+        return redirect('consola_financiera')
+
+    nombre_completo = f"{usuario.nombres} {usuario.apellidos}"
+    nombre = f"{usuario.nombres}"
+    apellidos = f"{usuario.apellidos}"
+    email = f"{usuario.email}"
+    foto_perfil = f"{usuario.foto_perfil}"
+    identificacion = f"{usuario.identificacion}"
+    
+    saldo = financiera.saldo_financiera
+    saldo_str = f"{saldo:,}"
+
+    # Convertir las fechas al formato "yyyy-MM-dd"
+    fecha_limite_pago_1_str = financiera.fecha_limite_pago_1.strftime('%Y-%m-%d')
+    fecha_limite_pago_2_str = financiera.fecha_limite_pago_2.strftime('%Y-%m-%d')
+    fecha_limite_pago_3_str = financiera.fecha_limite_pago_3.strftime('%Y-%m-%d')
+
+    return render(request, 'Financiera/consola_financiera.html', {
+        'nombre_completo': nombre_completo,
+        'nombre': nombre,
+        'apellidos': apellidos,
+        'email': email,
+        'foto_perfil': foto_perfil,
+        'identificacion': identificacion,
+        'saldo_str': saldo_str,
+        'fecha_limite_pago_1': fecha_limite_pago_1_str,
+        'fecha_limite_pago_2': fecha_limite_pago_2_str,
+        'fecha_limite_pago_3': fecha_limite_pago_3_str,
+    })
+    
+@login_required
+def transacciones_financiera(request):
+    estudiantes = Estudiante.objects.all()
+    nombres_apellidos_estudiantes = [f"{estudiante.usuario.nombres} {estudiante.usuario.apellidos}" for estudiante in estudiantes]
+        
+    transacciones = Transaccion.objects.all()  # Obtener todas las transacciones sin filtrar
+    
+    if request.method == 'POST':
+        origen = 'Financiera'
+        financiera = request.user.financiera
+        destino_id = request.POST['destino']
+        informacion_transaccion = request.POST['informacion_transaccion']
+        descripcion = request.POST['descripcion']
+        valor_transaccion = request.POST['valor_transaccion']
+        monto_transaccion = request.POST['monto_transaccion']
+        fecha_vencimiento = request.POST['fecha_vencimiento']
+
+        destino = Estudiante.objects.get(id=destino_id)
+
+        if informacion_transaccion == 'Pago de Semestre':
+            # Crear la transacción
+            transaccion = Transaccion(
+                origen=origen,
+                financiera=financiera,
+                destino=destino,
+                informacion_transaccion=informacion_transaccion,
+                descripcion=descripcion,
+                valor_transaccion=valor_transaccion,
+                monto_transaccion=monto_transaccion,
+                fecha_vencimiento_transaccion=fecha_vencimiento
+            )
+            transaccion.save()
+
+            # Actualizar el valor a pagar del semestre del estudiante
+            destino.valor_semestre_estudiante += Decimal(valor_transaccion)
+            destino.save()
+
+    return render(request, 'Financiera/transacciones_financiera.html', {
+        'nombres_apellidos_estudiantes': nombres_apellidos_estudiantes,
+        'estudiantes': estudiantes, 
+        'transacciones': transacciones,
+    })
+
