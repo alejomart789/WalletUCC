@@ -1,0 +1,44 @@
+{% extends 'Financiera/consola_financiera.html' %}
+{% load static %}
+
+{% block extra_styles %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Lista de Estudiantes</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre completo</th>
+                    <th>Número de teléfono</th>
+                    <th>Correo</th>
+                    <th>Créditos registrados</th>
+                    <th>Valor total a pagar del semestre</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se generan las filas de la tabla con datos de estudiantes -->
+                <tr>
+                    <td>Estudiante 1</td>
+                    <td>1234567890</td>
+                    <td>estudiante1@example.com</td>
+                    <td>30</td>
+                    <td>$300,000</td>
+                </tr>
+                <tr>
+                    <td>Estudiante 2</td>
+                    <td>9876543210</td>
+                    <td>estudiante2@example.com</td>
+                    <td>25</td>
+                    <td>$250,000</td>
+                </tr>
+                <!-- Agrega más filas según sea necesario -->
+            </tbody>
+        </table>
+    </div>
+    {% block Extra_JsScript %}
+
+    {% endblock %}
+{% endblock %}
