@@ -27,7 +27,8 @@ SECRET_KEY = 'django-insecure-13#+z0n$x+nqk!)!hcqkw&nofyd2%q!v1(j+_ob_005-0v1$l^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
 
 
 # Application definition
@@ -94,12 +95,8 @@ WSGI_APPLICATION = 'WalletUCC.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'db_walletucc',
-        'USER': 'root',
-        'PASSWORD': '2486',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
 
